@@ -43,6 +43,71 @@ source: USDA_Organic_Program_Enforcement is duckdb.table('USDA_Organic_Program_E
 >>>markdown
 Introduction analysis: To begin, let us focus our attention on how this dataset weaves together. Excluding the header row, we have a total of 1,501 rows in the dataset. Each row is going to represent a case that was filed into the U.S. Department of Agriculture's National Organic Compliance Database. Therefore, some key columns that we will need to consider include the following: Account Name, Complaint Type, Complaint Subtype, Date/Time Opened, Date/Time Case Closed, Outcomes, and Collected Amount. These considerations will feed into our analysis that we will examine at later points.
 >>>markdown
+Below is a sample of some of the interesting visualizations that we will explore later in our analysis. Please note that an explanation of these visualizations will be explained with appropriate questions as they surface during our exploration of the data.
+>>>malloy
+run: USDA_Organic_Program_Enforcement  -> {
+    nest: complaint_nest is {
+        group_by: `Complaint Type`
+        aggregate:
+        total_cases
+        limit: 8
+    }
+    
+}
+>>>malloy
+run: USDA_Organic_Program_Enforcement -> {
+    aggregate: total_cases
+    group_by: `Account Name`
+}
+>>>malloy
+run: USDA_Organic_Program_Enforcement  -> {
+    nest: nest_function is {
+        group_by: `Outcomes`
+        aggregate:
+        total_cases
+        limit: 3
+    }
+    
+}
+>>>malloy
+run: USDA_Organic_Program_Enforcement -> {
+    aggregate:
+    multiple_outcomes is count() {where: `Outcomes` ~ '%;%'}
+    one_outcome is count() {where: `Outcomes` !~ '%;%'}
+    group_by: collected_amt
+}
+>>>malloy
+run: USDA_Organic_Program_Enforcement  -> {
+    nest: complaint_nest is {
+        group_by: `Complaint Type`
+        group_by: `Outcomes`
+        aggregate:
+        total_cases
+        limit: 6
+    }
+}
+>>>malloy
+run: USDA_Organic_Program_Enforcement -> {
+group_by: `Year` is date_opened.year
+aggregate: outcome_fradulent_certificate_posted
+aggregate: outcome_proposed_suspension
+aggregate: outcome_civil_penalty
+}
+>>>malloy
+run: USDA_Organic_Program_Enforcement -> {
+group_by: `Year` is date_opened.year
+aggregate: `Avg # of Days to Complete Case` is round(avg_days)
+aggregate: outcome_fradulent_certificate_posted
+aggregate: outcome_proposed_suspension
+aggregate: outcome_civil_penalty
+}
+>>>malloy
+run: USDA_Organic_Program_Enforcement -> {
+group_by: `Year` is date_opened.year
+aggregate: `Avg # of Days to Complete Case` is round(avg_days)
+group_by: `Outcomes`
+}
+>>>markdown
 1) To start, we should confirm the dataset is complete. Therefore, we need to confirm that the amount of cases within the dataset is 1,501.
 >>>malloy
 run: USDA_Organic_Program_Enforcement -> {
